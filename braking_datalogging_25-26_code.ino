@@ -1,20 +1,16 @@
 // McMaster Chem-E Car Team
-// Datalogging Code - 24/25
+// Braking Datalogging Code - 25/26
 
 /*
 Some datalogging code for the Braking sub-team to run on the previous year's car.
-Uses the new Kalman filtering algorithm to reduce noise in data implemented on the
-newer car alongside several other features, but adapted to run on the Arduino UNO
-from last year. It uses the old car as a stationary platform so that they can
-complete their testing of the reaction temporarily while the Mechanical sub-team
-continues to work on getting this year's car chassis fabricated. The code is taken
-piece-meal from the current code, but adapted to work with the UNO and an L298N
-motor driver for the stirring mechanism. It also uses a micro-servo for the reactant
-dumping mechanism, 8 AA batteries to provide a 12 V power source to the L298N and
-for the stirring motor, a potentiometer to vary the stirring speed, and a DS18B20
-temperature sensor. All data is output via serial to Excel Data Streamer.
+It uses an arduino UNO platform so that they can complete their testing of the
+reactions temporarily while the Mechanical sub-team continues to work on getting
+this year's car chassis fabricated. Two reactions are being tested, a turbidity
+varying reaction and a temperature varying reaction. All data is output via
+serial to Excel Data Streamer.
 */
 
+// Included libraries
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -50,7 +46,7 @@ Outputs:     (double)x_temp, (double)p_temp
 Parameters:  (double)x_k, (double)p_k, (double)q, (double)r, (double)input
 Returns:     void
 */
-void kalman_filter(double x_k, double p_k, double q, double r, double input) // Kalman filtering algorithm
+void kalman_filter(double x_k, double p_k, double q, double r, double input)
 {
   // Kalman filter prediction
   double x_k_minus = x_k;     // Predicted next state estimate
@@ -72,6 +68,13 @@ void kalman_filter(double x_k, double p_k, double q, double r, double input) // 
   p_temp = p_k;
 }
 
+/*
+Description: Subroutine to fetch temperature form the temperature sensor when the data is ready.
+Inputs:      void
+Outputs:     (double)temperature_c
+Parameters:  void
+Returns:     void
+*/
 void fetch_temp(void)
 {
   temperature_c = temp_sensors.getTempCByIndex(0); // Get temperature in Celsius
@@ -135,7 +138,7 @@ void loop()
     fetch_temp(); // Fetch temperature after conversion, otherwise continue loop
   }
 
-  // Turbidity readings as V
+  // Turbidity readings as V (uncalibrated output)
   turbidity_v = (double)analogRead(TURBIDITY_SENS) * 3.3f / 1024.0f;
 
   // Output all necessary data for datalogging in CSV format for Excel Data Streamer
@@ -147,5 +150,5 @@ void loop()
   Serial.print(",");
   Serial.println(turbidity_v, 6);
 
-  delayMicroseconds(150000);  
+  delayMicroseconds(150000); // Delay to ensure Excel's data streamer can keep up with the data being sent
 }
