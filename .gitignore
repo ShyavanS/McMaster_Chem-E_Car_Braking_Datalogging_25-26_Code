@@ -1,2 +1,5 @@
 # Directories
 .vscode/
+
+# Libraries
+filter_lib.h
